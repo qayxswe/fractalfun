@@ -2,86 +2,87 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <title>Fractal Fun</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fraktale</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <button id="helpButton">?</button>
-    <div id="helpOverlay">
-      <h3>Steuerung</h3>
-      <ul>
-        <li><b>R</b> – Neues Ziel (Randomisieren)</li>
-        <li><b>Q</b> – Zurücksetzen</li>
-        <li><b>W / S</b> – Slider wechseln</li>
-        <li><b>A / D</b> – Wert des Sliders ändern</li>
-        <li><b>E</b> – Slider ein-/ausklappen</li>
-        <li><b>H</b> – Info zum rechten Canvas</li>
-      </ul>
-      <p>Du kannst alle Slider auch normal mit der Maus bedienen.</p>
-    </div>
-    
-    <button id="themeToggle">☾</button>
-    <div id="controls">
-        <button id="collapseButton" title="Slider ein-/ausklappen">▴</button>
-        <button id="randomizeButton">Randomisieren!</button>
-        <hr>
-        <div>
-            <input id="spread" type="range" min="-3.2" max="3.2" step="0.1" value="0.7">
-            <label for="spread">Streuung: 0.7</label>
-        </div>
-        <div>
-            <input id="sides" type="range" min="2" max="15" step="1" value="5">
-            <label for="sides">Seiten: 5</label>
-        </div>
-        <div>
-            <input id="levels" type="range" min="1" max="4" step="1" value="3">
-            <label for="levels">Tiefe: 3</label>
-        </div>
-        <div>
-            <input id="scale" type="range" min="0.1" max="0.9" step="0.1" value="0.5">
-            <label for="scale">Skalierung: 0.5</label>
-        </div>
-        <div>
-            <input id="lineWidth" type="range" min="5" max="30" step="5" value="15">
-            <label for="lineWidth">Linienbreite: 15</label>
-        </div>
-        <div>
-            <input id="lineLength" type="range" min="0.3" max="1" step="0.1" value="1">
-            <label for="lineLength">Länge: 1</label>
-        </div>
-        <div>
-            <input id="branching" type="range" min="1" max="5" step="1" value="1">
-            <label for="branching">Äste: 1</label>
-        </div>
-        <div>
-            <input id="hue" type="range" min="0" max="360" step="30" value="290">
-            <label for="hue">Farbton: 290</label>
-        </div>
-        <div>
-            <input id="nLevelBranches" type="range" min="0" max="2" step="1" value="1">
-            <label for="nLevelBranches">Verzweigung: 1</label>
-        </div>
-        <button id="resetButton">Zurücksetzen</button>
-    </div>
-
     <div id="canvasContainer">
         <canvas id="canvas1"></canvas>
         <canvas id="canvas2"></canvas>
     </div>
-    
-    <div id="successMessage" style="display:none;">
-        ✓ Richtig!
+
+    <div id="controls">
+        <!-- Einklapp-Pfeil (E) -->
+        <button id="collapseButton" title="Slider ein-/ausklappen (E)">▴</button>
+
+        <!-- Hauptaktionen -->
+        <button id="randomizeButton" class="action-button">Randomisieren (R)</button>
+        <button id="resetButton" class="action-button">Reset (Q)</button>
+
+        <!-- Slider: Label über Slider -->
+        <div>
+            <label for="spread">Streuung:</label>
+            <input type="range" id="spread" min="-3.2" max="3.2" step="0.1" value="0.7">
+        </div>
+        <div>
+            <label for="sides">Seiten:</label>
+            <input type="range" id="sides" min="2" max="15" step="1" value="5">
+        </div>
+        <div>
+            <label for="levels">Tiefe:</label>
+            <input type="range" id="levels" min="1" max="4" step="1" value="3">
+        </div>
+        <div>
+            <label for="scale">Skalierung:</label>
+            <input type="range" id="scale" min="0.1" max="0.9" step="0.1" value="0.5">
+        </div>
+        <div>
+            <label for="lineWidth">Linienbreite:</label>
+            <input type="range" id="lineWidth" min="5" max="30" step="5" value="15">
+        </div>
+        <div>
+            <label for="lineLength">Länge:</label>
+            <input type="range" id="lineLength" min="0.3" max="1.0" step="0.1" value="1.0">
+        </div>
+        <div>
+            <label for="branching">Äste:</label>
+            <input type="range" id="branching" min="1" max="3" step="1" value="1">
+        </div>
+        <div>
+            <label for="hue">Farbton:</label>
+            <input type="range" id="hue" min="0" max="330" step="30" value="290">
+        </div>
+        <div>
+            <label for="nLevelBranches">Verzweigung:</label>
+            <input type="range" id="nLevelBranches" min="0" max="2" step="1" value="2">
+        </div>
     </div>
 
+    <div id="successMessage">TREFFER!</div>
+
     <div id="debugInfo">
-        <strong>Rechter Canvas:</strong><br>
         <div id="debugContent"></div>
     </div>
+
+    <button id="helpButton" title="Steuerung anzeigen">?</button>
+
+    <div id="helpOverlay">
+        <h3>Steuerung</h3>
+        <ul>
+            <li><b>R</b> – Neues Ziel (Randomisieren)</li>
+            <li><b>Q</b> – Zurücksetzen</li>
+            <li><b>W / S</b> – Zwischen Slidern wechseln</li>
+            <li><b>A / D</b> – Wert des gewählten Sliders ändern</li>
+            <li><b>E</b> – Slider ein-/ausklappen</li>
+            <li><b>H</b> – Infos zum rechten Canvas ein-/ausblenden</li>
+            <li><b>Touch</b> – Swipe oben/unten/links/rechts, 2×Tippen=Reset, 3×Tippen=Random</li>
+        </ul>
+        <p>Du kannst alle Slider auch mit der Maus bedienen.</p>
+    </div>
+
+    <button id="themeToggle" title="Light/Dark Mode umschalten">☾</button>
 
     <script src="script.js"></script>
 </body>
 </html>
-
-
