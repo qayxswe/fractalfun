@@ -12,6 +12,9 @@ window.addEventListener('load', function() {
     const themeToggle = document.getElementById('themeToggle');
     const collapseButton = document.getElementById('collapseButton');
 
+    const animationToggle = document.getElementById('animationToggle');
+    const animationMenu = document.getElementById('animationMenu');
+
     const randomizeButton = document.getElementById('randomizeButton');
     const resetButton = document.getElementById('resetButton');
 
@@ -45,6 +48,9 @@ window.addEventListener('load', function() {
     const nLevelBranchesControl = document.getElementById('nLevelBranches');
     const nLevelBranchesLabel = document.querySelector('[for="nLevelBranches"]');
 
+    const rotationControl = document.getElementById('rotation');
+    const rotationLabel = document.querySelector('[for="rotation"]');
+
     // Slider in Reihenfolge für WASD / Gesten
     const sliderElements = [
         spreadControl,
@@ -55,7 +61,8 @@ window.addEventListener('load', function() {
         lineLengthControl,
         branchingControl,
         hueControl,
-        nLevelBranchesControl
+        nLevelBranchesControl,
+        rotationControl
     ];
     let currentSliderIndex = 0;
 
@@ -76,6 +83,7 @@ window.addEventListener('load', function() {
     let lineWidth = 15;
     let lineLength = 1;
     let nLevelBranches = 2;
+    let rotationDeg = 0; // nur für linkes Fraktal
 
     // Ziel-Fraktal – rechte Seite
     let targetSides = 5;
@@ -88,6 +96,23 @@ window.addEventListener('load', function() {
     let targetLineLength = 1;
     let targetNLevelBranches = 2;
     let gameMode = false;
+
+    // Animation-Status pro Slider
+    const animState = {}; // key = sliderId
+
+    // Basis-Delays pro Slider & Speed-Level
+    const animDelays = {
+        spread:         { 1: 220, 2: 140, 3: 80 },
+        sides:          { 1: 260, 2: 170, 3: 90 },
+        levels:         { 1: 350, 2: 220, 3: 130 },
+        scale:          { 1: 220, 2: 140, 3: 80 },
+        lineWidth:      { 1: 230, 2: 150, 3: 90 },
+        lineLength:     { 1: 220, 2: 140, 3: 80 },
+        branching:      { 1: 260, 2: 170, 3: 100 },
+        hue:            { 1: 200, 2: 130, 3: 80 },
+        nLevelBranches: { 1: 280, 2: 190, 3: 110 },
+        rotation:       { 1: 220, 2: 140, 3: 80 }
+    };
 
     // ==============================
     // Canvas-Größe & Position
@@ -195,6 +220,13 @@ window.addEventListener('load', function() {
         sliderChange();
     });
 
+    // Rotation: NICHT im CheckMatch und NICHT im Ziel
+    rotationControl.addEventListener('change', e => {
+        rotationDeg = parseFloat(e.target.value);
+        updateSliders();
+        drawFractal(); // kein checkMatch()
+    });
+
     sliderElements.forEach((slider, index) => {
         slider.addEventListener('focus', () => {
             currentSliderIndex = index;
@@ -211,6 +243,10 @@ window.addEventListener('load', function() {
     function nudgeCurrentSlider(direction) {
         const slider = sliderElements[currentSliderIndex];
         if (!slider) return;
+        nudgeSlider(slider, direction);
+    }
+
+    function nudgeSlider(slider, direction) {
         const step = parseFloat(slider.step) || 1;
         const min = parseFloat(slider.min);
         const max = parseFloat(slider.max);
@@ -252,6 +288,9 @@ window.addEventListener('load', function() {
 
         nLevelBranchesControl.value = nLevelBranches;
         nLevelBranchesLabel.innerText = 'Verzweigung: ' + nLevelBranches;
+
+        rotationControl.value = rotationDeg;
+        rotationLabel.innerText = 'Rotation: ' + rotationDeg.toFixed(0) + '°';
     }
 
     // ==============================
@@ -342,6 +381,110 @@ window.addEventListener('load', function() {
         collapseButton.addEventListener('click', () => {
             setSlidersCollapsed(!slidersCollapsed);
         });
+    }
+
+    // ==============================
+    // Animation-Menü
+    // ==============================
+    if (animationToggle && animationMenu) {
+        animationToggle.addEventListener('click', () => {
+            const visible = animationMenu.style.display === 'block';
+            animationMenu.style.display = visible ? 'none' : 'block';
+        });
+
+        const rows = animationMenu.querySelectorAll('.anim-row');
+        rows.forEach(row => {
+            const sliderId = row.dataset.sliderId;
+            const enable = row.querySelector('.anim-enable');
+            const speed = row.querySelector('.anim-speed');
+            const speedLabel = row.querySelector('.anim-speed-label');
+            const slider = document.getElementById(sliderId);
+
+            if (!slider) return;
+
+            animState[sliderId] = {
+                sliderId,
+                slider,
+                enable,
+                speed,
+                speedLabel,
+                direction: 1,
+                timerId: null
+            };
+
+            speed.addEventListener('input', () => {
+                speedLabel.textContent = speedLevelToText(speed.value);
+            });
+
+            enable.addEventListener('change', () => {
+                if (enable.checked) {
+                    startSliderAnimation(sliderId);
+                } else {
+                    stopSliderAnimation(sliderId);
+                }
+            });
+        });
+    }
+
+    function speedLevelToText(level) {
+        if (Number(level) === 1) return 'Langsam';
+        if (Number(level) === 2) return 'Mittel';
+        return 'Schnell';
+    }
+
+    function getDelayFor(sliderId, speedLevel) {
+        const cfg = animDelays[sliderId] || { 1: 250, 2: 170, 3: 100 };
+        return cfg[speedLevel] || cfg[1];
+    }
+
+    function startSliderAnimation(sliderId) {
+        const st = animState[sliderId];
+        if (!st) return;
+
+        if (st.timerId !== null) {
+            clearTimeout(st.timerId);
+            st.timerId = null;
+        }
+
+        const stepFn = () => {
+            if (!st.enable.checked) {
+                st.timerId = null;
+                return;
+            }
+            const slider = st.slider;
+            const step = parseFloat(slider.step) || 1;
+            const min = parseFloat(slider.min);
+            const max = parseFloat(slider.max);
+            let value = parseFloat(slider.value);
+
+            value += st.direction * step;
+
+            if (value > max) {
+                value = max;
+                st.direction = -1;
+            } else if (value < min) {
+                value = min;
+                st.direction = 1;
+            }
+
+            slider.value = value;
+            slider.dispatchEvent(new Event('change', { bubbles: true }));
+
+            const speedLevel = Number(st.speed.value || 1);
+            const delay = getDelayFor(sliderId, speedLevel);
+            st.timerId = setTimeout(stepFn, delay);
+        };
+
+        stepFn();
+    }
+
+    function stopSliderAnimation(sliderId) {
+        const st = animState[sliderId];
+        if (!st) return;
+        if (st.timerId !== null) {
+            clearTimeout(st.timerId);
+            st.timerId = null;
+        }
     }
 
     function showInitialHelp() {
@@ -488,6 +631,7 @@ window.addEventListener('load', function() {
         ctx1.lineWidth = lineWidth;
         ctx1.strokeStyle = color;
         ctx1.translate(canvas1.width / 2, canvas1.height / 2);
+        ctx1.rotate(rotationDeg * Math.PI / 180); // Rotation nur links
         for (let i = 0; i < sides; i++) {
             ctx1.rotate((Math.PI * 2) / sides);
             drawBranch(0, ctx1, cfg);
@@ -635,6 +779,7 @@ window.addEventListener('load', function() {
         lineWidth = 15;
         lineLength = 1;
         nLevelBranches = 2;
+        rotationDeg = 0;
 
         gameMode = false;
         randomizeButton.disabled = false;
