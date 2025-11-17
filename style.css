@@ -104,9 +104,10 @@ body {
 
 /* ===========================
    Collapse Sliders (E + Button)
+   -> ALLES außer Pfeil ausblenden
 =========================== */
-body.sliders-collapsed #controls > div {
-    display: none; /* Slider überall ausblenden */
+body.sliders-collapsed #controls > *:not(#collapseButton) {
+    display: none;
 }
 
 /* ===========================
@@ -235,6 +236,68 @@ body.sliders-collapsed #controls > div {
 }
 
 /* ===========================
+   Animation Toggle + Menu
+=========================== */
+#animationToggle {
+    position: fixed;
+    top: 8px;
+    right: 76px;
+    width: 46px;
+    height: 24px;
+    border-radius: 12px;
+    border: 2px solid #ffffff;
+    background: rgba(0,0,0,0.8);
+    color: #ffffff;
+    font-size: 11px;
+    cursor: pointer;
+    z-index: 50;
+}
+
+#animationMenu {
+    position: fixed;
+    top: 40px;
+    right: 76px;
+    width: 280px;
+    max-height: 60vh;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.9);
+    border: 2px solid #ffffff;
+    padding: 8px;
+    font-size: 10px;
+    z-index: 50;
+    display: none;
+}
+
+#animationMenu h3 {
+    margin-bottom: 4px;
+    font-size: 11px;
+}
+
+.anim-row {
+    display: flex;
+    align-items: center;
+    margin: 3px 0;
+    gap: 4px;
+}
+
+.anim-label {
+    flex: 0 0 80px;
+}
+
+.anim-enable {
+    flex: 0 0 16px;
+}
+
+.anim-speed {
+    flex: 1 1 auto;
+}
+
+.anim-speed-label {
+    flex: 0 0 60px;
+    text-align: right;
+}
+
+/* ===========================
    Light Mode
 =========================== */
 body.light-mode {
@@ -280,10 +343,12 @@ body.light-mode #successMessage {
     color: #000;
 }
 
-/* Help & Toggle Buttons */
+/* Help & Toggles */
 body.light-mode #helpButton,
 body.light-mode #themeToggle,
-body.light-mode #helpOverlay {
+body.light-mode #animationToggle,
+body.light-mode #helpOverlay,
+body.light-mode #animationMenu {
     background: rgba(255,255,255,0.9);
     color: #000;
     border-color: #000;
@@ -324,10 +389,6 @@ body.light-mode #canvas2 {
         bottom: 4px;
     }
 
-    body.sliders-collapsed #controls > *:not(#collapseButton) {
-        display: none;
-    }
-
     body.sliders-collapsed #collapseButton {
         width: 28px;
         height: 28px;
@@ -354,7 +415,18 @@ body.light-mode #canvas2 {
         right: 40px;
     }
 
+    #animationToggle {
+        top: auto;
+        bottom: 20vh;
+        right: 76px;
+    }
+
     #helpOverlay {
+        top: auto;
+        bottom: calc(20vh + 30px);
+    }
+
+    #animationMenu {
         top: auto;
         bottom: calc(20vh + 30px);
     }
