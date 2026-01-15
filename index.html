@@ -3,32 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <title>Fractal Fun</title>
-
-  <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css">
-
-  <!-- Script: wir nutzen window.load / DOMContentLoaded im JS,
-       die Position ist daher egal; in <head> ist aber OK -->
   <script src="script.js" defer></script>
 </head>
 <body class="dark-mode">
 
-  <!-- ======================================================
-       TOPBAR (immer erreichbar)
-       - enthält Theme- und Hilfe-Button
-       - z-index so gewählt, dass Buttons über Overlays sichtbar bleiben
-  ====================================================== -->
+  <!-- ===================== TOPBAR ===================== -->
   <header class="topbar" role="banner">
     <button id="themeToggle" title="Light / Dark umschalten">☾</button>
     <button id="helpButton" title="Hilfe anzeigen">?</button>
   </header>
 
-  <!-- ======================================================
-       HELP OVERLAY
-       - hat einen eigenen Close-Button (so bleibt es immer
-         möglich, das Overlay zu schließen)
-       - clicking outside (overlay background) sollte ebenfalls schließen
-  ====================================================== -->
+  <!-- ===================== HELP OVERLAY ===================== -->
   <div id="helpOverlay" class="overlay" aria-hidden="true" role="dialog" aria-label="Hilfe">
     <div class="overlay-inner">
       <button id="helpClose" class="overlay-close" aria-label="Schließen">✕</button>
@@ -40,46 +26,30 @@
         <li><strong>Q</strong> – Reset</li>
         <li><strong>E</strong> – Menü ein-/ausklappen</li>
         <li><strong>H</strong> – Debug anzeigen</li>
+        <li><strong>0–4</strong> – Difficulty direkt einstellen</li>
       </ul>
     </div>
   </div>
 
-  <!-- ======================================================
-       COLLAPSE HANDLE (sichtbar, auch wenn sidebar versteckt)
-       - sitzt außerhalb der verschiebenden Sidebar, bleibt erreichbar
-       - Icon wird per JS gedreht/angepasst (zeigt Richtung der Bewegung)
-  ====================================================== -->
+  <!-- ===================== COLLAPSE HANDLE ===================== -->
   <button id="collapseHandle" class="collapse-handle" aria-label="Sidebar ein-/ausblenden">◀</button>
 
-  <!-- ======================================================
-       SIDEBAR / CONTROLS
-       - Sidebar kann per class (body.sliders-collapsed) eingeklappt werden.
-       - Alle Slider haben neben sich ein <span class="value"> für den aktuellen Wert.
-       - IDs müssen mit dem JS übereinstimmen.
-  ====================================================== -->
+  <!-- ===================== SIDEBAR / CONTROLS ===================== -->
   <aside id="controls" class="panel" role="complementary" aria-label="Steuerung">
 
-    <!-- NOTE: collapseButton innerhalb der Sidebar kann existieren, 
-         bleibt aber optional — die sichtbare Handle ist #collapseHandle -->
     <div class="sidebar-header">
       <h3>Steuerung</h3>
       <button id="collapseButton" title="Menü ein-/ausklappen">▴</button>
     </div>
 
-    <!-- -----------------------------
-         DIFFICULTY (separat, nur Ziel-Fraktal)
-         ----------------------------- -->
+    <!-- Difficulty / Ziel-Fraktal -->
     <section class="control-section" id="target-controls">
       <h4>Ziel-Schwierigkeit</h4>
       <label for="difficulty">Schwierigkeit: <span id="difficultyLabel">2</span></label>
       <input id="difficulty" type="range" min="0" max="4" step="1" value="2">
-      <!-- Hinweis: difficulty only affects the target generation -->
     </section>
 
-    <!-- -----------------------------
-         PLAYER SLIDERS (beeinflussen canvas1)
-         Neben jedem Slider: <span class="value" id="<id>Value">...</span>
-         ----------------------------- -->
+    <!-- Spieler-Slider -->
     <section class="control-section" id="player-controls">
       <h4>Fraktal anpassen (Spieler)</h4>
 
@@ -108,16 +78,13 @@
       <input id="nLevelBranches" type="range" min="1" max="2" step="1" value="2">
 
       <label for="hue">Farbton <span class="value" id="hueValue">290</span></label>
-      <!-- note: hue goes 0..330 -->
       <input id="hue" type="range" min="0" max="330" step="30" value="290">
 
       <label for="rotation">Rotation <span class="value" id="rotationValue">0°</span></label>
       <input id="rotation" type="range" min="0" max="360" step="5" value="0">
     </section>
 
-    <!-- -----------------------------
-         BUTTONS
-         ----------------------------- -->
+    <!-- Buttons -->
     <section class="control-section buttons">
       <button id="randomizeButton">Neues Ziel</button>
       <button id="resetButton">Reset</button>
@@ -125,31 +92,19 @@
 
   </aside>
 
-  <!-- ======================================================
-       TWO CANVASES
-       - canvas1: player / left
-       - canvas2: target / right
-       Positioning & sizing handled by CSS + JS
-  ====================================================== -->
+  <!-- ===================== CANVASES ===================== -->
   <canvas id="canvas1" aria-label="Spieler Fraktal"></canvas>
   <canvas id="canvas2" aria-label="Ziel Fraktal"></canvas>
 
-  <!-- ======================================================
-       GLOBAL SCREEN FLASH (bei Treffer)
-       - hidden by default; JS will toggle a short 'flash' class
-  ====================================================== -->
+  <!-- ===================== SCREEN FLASH ===================== -->
   <div id="screenFlash" aria-hidden="true"></div>
 
-  <!-- ======================================================
-       SUCCESS & DEBUG
-  ====================================================== -->
+  <!-- ===================== SUCCESS + DEBUG ===================== -->
   <div id="successMessage" role="status" aria-live="polite">✔ Geschafft!</div>
 
   <div id="debugInfo" aria-hidden="true">
     <button id="debugClose" aria-label="Debug schließen">✕</button>
-    <div id="debugContent">
-      <!-- Debug content injected by JS -->
-    </div>
+    <div id="debugContent"></div>
   </div>
 
 </body>
