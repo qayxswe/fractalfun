@@ -1,160 +1,156 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Fractal Fun</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
+  <meta charset="utf-8" />
+  <title>Fractal Fun</title>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Script: wir nutzen window.load / DOMContentLoaded im JS,
+       die Position ist daher egal; in <head> ist aber OK -->
+  <script src="script.js" defer></script>
 </head>
-<body>
-    <div id="canvasContainer">
-        <canvas id="canvas1"></canvas>
-        <canvas id="canvas2"></canvas>
+<body class="dark-mode">
+
+  <!-- ======================================================
+       TOPBAR (immer erreichbar)
+       - enthält Theme- und Hilfe-Button
+       - z-index so gewählt, dass Buttons über Overlays sichtbar bleiben
+  ====================================================== -->
+  <header class="topbar" role="banner">
+    <button id="themeToggle" title="Light / Dark umschalten">☾</button>
+    <button id="helpButton" title="Hilfe anzeigen">?</button>
+  </header>
+
+  <!-- ======================================================
+       HELP OVERLAY
+       - hat einen eigenen Close-Button (so bleibt es immer
+         möglich, das Overlay zu schließen)
+       - clicking outside (overlay background) sollte ebenfalls schließen
+  ====================================================== -->
+  <div id="helpOverlay" class="overlay" aria-hidden="true" role="dialog" aria-label="Hilfe">
+    <div class="overlay-inner">
+      <button id="helpClose" class="overlay-close" aria-label="Schließen">✕</button>
+      <h2>Steuerung</h2>
+      <ul>
+        <li><strong>W / S</strong> – Slider auswählen</li>
+        <li><strong>A / D</strong> – aktiver Slider ändern</li>
+        <li><strong>R</strong> – Neues Ziel-Fraktal</li>
+        <li><strong>Q</strong> – Reset</li>
+        <li><strong>E</strong> – Menü ein-/ausklappen</li>
+        <li><strong>H</strong> – Debug anzeigen</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       COLLAPSE HANDLE (sichtbar, auch wenn sidebar versteckt)
+       - sitzt außerhalb der verschiebenden Sidebar, bleibt erreichbar
+       - Icon wird per JS gedreht/angepasst (zeigt Richtung der Bewegung)
+  ====================================================== -->
+  <button id="collapseHandle" class="collapse-handle" aria-label="Sidebar ein-/ausblenden">◀</button>
+
+  <!-- ======================================================
+       SIDEBAR / CONTROLS
+       - Sidebar kann per class (body.sliders-collapsed) eingeklappt werden.
+       - Alle Slider haben neben sich ein <span class="value"> für den aktuellen Wert.
+       - IDs müssen mit dem JS übereinstimmen.
+  ====================================================== -->
+  <aside id="controls" class="panel" role="complementary" aria-label="Steuerung">
+
+    <!-- NOTE: collapseButton innerhalb der Sidebar kann existieren, 
+         bleibt aber optional — die sichtbare Handle ist #collapseHandle -->
+    <div class="sidebar-header">
+      <h3>Steuerung</h3>
+      <button id="collapseButton" title="Menü ein-/ausklappen">▴</button>
     </div>
 
-    <div id="controls">
-        <!-- Einklapp-Pfeil (E) -->
-        <button id="collapseButton" title="Slider ein-/ausklappen (E)">▴</button>
+    <!-- -----------------------------
+         DIFFICULTY (separat, nur Ziel-Fraktal)
+         ----------------------------- -->
+    <section class="control-section" id="target-controls">
+      <h4>Ziel-Schwierigkeit</h4>
+      <label for="difficulty">Schwierigkeit: <span id="difficultyLabel">2</span></label>
+      <input id="difficulty" type="range" min="0" max="4" step="1" value="2">
+      <!-- Hinweis: difficulty only affects the target generation -->
+    </section>
 
-        <!-- Hauptaktionen -->
-        <button id="randomizeButton" class="action-button">Randomisieren (R)</button>
-        <button id="resetButton" class="action-button">Reset (Q)</button>
+    <!-- -----------------------------
+         PLAYER SLIDERS (beeinflussen canvas1)
+         Neben jedem Slider: <span class="value" id="<id>Value">...</span>
+         ----------------------------- -->
+    <section class="control-section" id="player-controls">
+      <h4>Fraktal anpassen (Spieler)</h4>
 
-        <!-- Slider: Label über Slider -->
-        <div>
-            <label for="spread">Streuung:</label>
-            <input type="range" id="spread" min="-3.2" max="3.2" step="0.1" value="0.7">
-        </div>
-        <div>
-            <label for="sides">Seiten:</label>
-            <input type="range" id="sides" min="2" max="15" step="1" value="5">
-        </div>
-        <div>
-            <label for="levels">Tiefe:</label>
-            <input type="range" id="levels" min="1" max="4" step="1" value="3">
-        </div>
-        <div>
-            <label for="scale">Skalierung:</label>
-            <input type="range" id="scale" min="0.1" max="0.9" step="0.1" value="0.5">
-        </div>
-        <div>
-            <label for="lineWidth">Linienbreite:</label>
-            <input type="range" id="lineWidth" min="5" max="30" step="5" value="15">
-        </div>
-        <div>
-            <label for="lineLength">Länge:</label>
-            <input type="range" id="lineLength" min="0.3" max="1.0" step="0.1" value="1.0">
-        </div>
-        <div>
-            <label for="branching">Äste:</label>
-            <input type="range" id="branching" min="1" max="3" step="1" value="1">
-        </div>
-        <div>
-            <label for="hue">Farbton:</label>
-            <input type="range" id="hue" min="0" max="330" step="30" value="290">
-        </div>
-        <div>
-            <label for="nLevelBranches">Verzweigung:</label>
-            <input type="range" id="nLevelBranches" min="0" max="2" step="1" value="2">
-        </div>
-        <div>
-            <label for="rotation">Rotation:</label>
-            <input type="range" id="rotation" min="-180" max="180" step="5" value="0">
-        </div>
+      <label for="spread">Streuung <span class="value" id="spreadValue">0.7</span></label>
+      <input id="spread" type="range" min="-3" max="3" step="0.1" value="0.7">
+
+      <label for="sides">Seiten <span class="value" id="sidesValue">5</span></label>
+      <input id="sides" type="range" min="2" max="15" step="1" value="5">
+
+      <label for="levels">Tiefe <span class="value" id="levelsValue">3</span></label>
+      <input id="levels" type="range" min="1" max="4" step="1" value="3">
+
+      <label for="scale">Skalierung <span class="value" id="scaleValue">0.5</span></label>
+      <input id="scale" type="range" min="0.1" max="0.9" step="0.05" value="0.5">
+
+      <label for="lineWidth">Linienbreite <span class="value" id="lineWidthValue">15</span></label>
+      <input id="lineWidth" type="range" min="5" max="30" step="5" value="15">
+
+      <label for="lineLength">Linienlänge <span class="value" id="lineLengthValue">1.0</span></label>
+      <input id="lineLength" type="range" min="0.3" max="1" step="0.1" value="1">
+
+      <label for="branching">Äste <span class="value" id="branchingValue">1</span></label>
+      <input id="branching" type="range" min="1" max="3" step="1" value="1">
+
+      <label for="nLevelBranches">Verzweigung <span class="value" id="nLevelBranchesValue">2</span></label>
+      <input id="nLevelBranches" type="range" min="1" max="2" step="1" value="2">
+
+      <label for="hue">Farbton <span class="value" id="hueValue">290</span></label>
+      <!-- note: hue goes 0..330 -->
+      <input id="hue" type="range" min="0" max="330" step="30" value="290">
+
+      <label for="rotation">Rotation <span class="value" id="rotationValue">0°</span></label>
+      <input id="rotation" type="range" min="0" max="360" step="5" value="0">
+    </section>
+
+    <!-- -----------------------------
+         BUTTONS
+         ----------------------------- -->
+    <section class="control-section buttons">
+      <button id="randomizeButton">Neues Ziel</button>
+      <button id="resetButton">Reset</button>
+    </section>
+
+  </aside>
+
+  <!-- ======================================================
+       TWO CANVASES
+       - canvas1: player / left
+       - canvas2: target / right
+       Positioning & sizing handled by CSS + JS
+  ====================================================== -->
+  <canvas id="canvas1" aria-label="Spieler Fraktal"></canvas>
+  <canvas id="canvas2" aria-label="Ziel Fraktal"></canvas>
+
+  <!-- ======================================================
+       GLOBAL SCREEN FLASH (bei Treffer)
+       - hidden by default; JS will toggle a short 'flash' class
+  ====================================================== -->
+  <div id="screenFlash" aria-hidden="true"></div>
+
+  <!-- ======================================================
+       SUCCESS & DEBUG
+  ====================================================== -->
+  <div id="successMessage" role="status" aria-live="polite">✔ Geschafft!</div>
+
+  <div id="debugInfo" aria-hidden="true">
+    <button id="debugClose" aria-label="Debug schließen">✕</button>
+    <div id="debugContent">
+      <!-- Debug content injected by JS -->
     </div>
-
-    <div id="successMessage">TREFFER!</div>
-
-    <div id="debugInfo">
-        <div id="debugContent"></div>
-    </div>
-
-    <button id="helpButton" title="Steuerung anzeigen">?</button>
-
-    <div id="helpOverlay">
-        <h3>Steuerung</h3>
-        <ul>
-            <li><b>R</b> – Neues Ziel (Randomisieren)</li>
-            <li><b>Q</b> – Zurücksetzen</li>
-            <li><b>W / S</b> – Zwischen Slidern wechseln</li>
-            <li><b>A / D</b> – Wert des gewählten Sliders ändern</li>
-            <li><b>E</b> – Slider ein-/ausklappen</li>
-            <li><b>H</b> – Infos zum rechten Canvas ein-/ausblenden</li>
-            <li><b>Touch</b> – Swipe oben/unten/links/rechts, 2×Tippen = Reset, 3×Tippen = Random</li>
-        </ul>
-        <p>Du kannst alle Slider auch mit der Maus bedienen.</p>
-    </div>
-
-    <button id="themeToggle" title="Light/Dark Mode umschalten">☾</button>
-
-    <!-- Animation-Menü -->
-    <button id="animationToggle" title="Animationsmenü ein-/ausblenden">Anim</button>
-    <div id="animationMenu">
-        <h3>Animation</h3>
-        <p>Häkchen = Slider automatisch bewegen.</p>
-        <div class="anim-row" data-slider-id="spread">
-            <span class="anim-label">Streuung</span>
-            <input type="checkbox" class="anim-enable">
-            <input type="range" min="1" max="3" step="1" value="1" class="anim-speed">
-            <span class="anim-speed-label">Langsam</span>
-        </div>
-        <div class="anim-row" data-slider-id="sides">
-            <span class="anim-label">Seiten</span>
-            <input type="checkbox" class="anim-enable">
-            <input type="range" min="1" max="3" step="1" value="1" class="anim-speed">
-            <span class="anim-speed-label">Langsam</span>
-        </div>
-        <div class="anim-row" data-slider-id="levels">
-            <span class="anim-label">Tiefe</span>
-            <input type="checkbox" class="anim-enable">
-            <input type="range" min="1" max="3" step="1" value="1" class="anim-speed">
-            <span class="anim-speed-label">Langsam</span>
-        </div>
-        <div class="anim-row" data-slider-id="scale">
-            <span class="anim-label">Skalierung</span>
-            <input type="checkbox" class="anim-enable">
-            <input type="range" min="1" max="3" step="1" value="1" class="anim-speed">
-            <span class="anim-speed-label">Langsam</span>
-        </div>
-        <div class="anim-row" data-slider-id="lineWidth">
-            <span class="anim-label">Linienbreite</span>
-            <input type="checkbox" class="anim-enable">
-            <input type="range" min="1" max="3" step="1" value="1" class="anim-speed">
-            <span class="anim-speed-label">Langsam</span>
-        </div>
-        <div class="anim-row" data-slider-id="lineLength">
-            <span class="anim-label">Länge</span>
-            <input type="checkbox" class="anim-enable">
-            <input type="range" min="1" max="3" step="1" value="1" class="anim-speed">
-            <span class="anim-speed-label">Langsam</span>
-        </div>
-        <div class="anim-row" data-slider-id="branching">
-            <span class="anim-label">Äste</span>
-            <input type="checkbox" class="anim-enable">
-            <input type="range" min="1" max="3" step="1" value="1" class="anim-speed">
-            <span class="anim-speed-label">Langsam</span>
-        </div>
-        <div class="anim-row" data-slider-id="hue">
-            <span class="anim-label">Farbton</span>
-            <input type="checkbox" class="anim-enable">
-            <input type="range" min="1" max="3" step="1" value="1" class="anim-speed">
-            <span class="anim-speed-label">Langsam</span>
-        </div>
-        <div class="anim-row" data-slider-id="nLevelBranches">
-            <span class="anim-label">Verzweigung</span>
-            <input type="checkbox" class="anim-enable">
-            <input type="range" min="1" max="3" step="1" value="1" class="anim-speed">
-            <span class="anim-speed-label">Langsam</span>
-        </div>
-        <div class="anim-row" data-slider-id="rotation">
-            <span class="anim-label">Rotation</span>
-            <input type="checkbox" class="anim-enable">
-            <input type="range" min="1" max="3" step="1" value="1" class="anim-speed">
-            <span class="anim-speed-label">Langsam</span>
-        </div>
-    </div>
+  </div>
 
 </body>
 </html>
-
