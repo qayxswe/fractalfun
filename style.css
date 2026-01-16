@@ -11,7 +11,6 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: sans-serif;
-  overflow: hidden;
 }
 
 /* ======================================================
@@ -31,10 +30,10 @@ body.light-mode {
    TOPBAR
    ====================================================== */
 .topbar {
-  position: fixed;
+  position: fixed; /*position wird relativ zum viewport errechnet -> bleibt immer oben rechts in der ecke*/
   top: 8px;
   right: 10px;
-  z-index: 100;
+  z-index: 100; /* besagt, dass dieses Element in der obersten Ebene liegt, also VOR den anderen Elementen*/
 }
 
 .topbar button {
@@ -49,7 +48,7 @@ body.light-mode {
 
 /* Light mode buttons in topbar */
 body.light-mode .topbar button {
-  background-color: #ddd;
+  background-color: #ddd; /* damit der iconinhalt erkennbar ist, wenn lightmode ausgewählt ist*/
 }
 
 /* ======================================================
@@ -62,10 +61,9 @@ body.light-mode .topbar button {
   width: 260px;
   height: 100vh;
   padding: 10px;
-  overflow-y: auto;
   background-color: rgba(0,0,0,0.85);
   z-index: 50;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease; /* dieser effekt, wenn von portrait <-> landscape gewechselt wird */
 }
 
 /* Light mode sidebar */
@@ -75,7 +73,7 @@ body.light-mode .panel {
 
 /* Eingeklappte Sidebar */
 body.sliders-collapsed .panel {
-  transform: translateX(-240px);
+  transform: translateX(-240px); /* kleine ecke der sidebar bleibt sichtbar*/
 }
 
 /* ======================================================
@@ -126,7 +124,7 @@ body.sliders-collapsed .collapse-handle {
     left: 50%;
     top: auto;
     bottom: 45vh;
-    transform: translateX(-50%);
+    transform: translateX(50%);
     border-radius: 6px 6px 0 0;
   }
 
